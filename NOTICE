@@ -1,0 +1,3 @@
+This project vendors code from chatgpt2api (https://github.com/basketikun/chatgpt2api)
+Copyright (c) 2026 kunkun — MIT License.
+Vendored files live under src/cgimg/_vendor/ and retain their original behavior.
