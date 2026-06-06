@@ -22,20 +22,34 @@ If you are not comfortable with these terms, do not use this software.
 
 ## Requirements
 
-- **Python ≥ 3.12**
-- [**uv**](https://docs.astral.sh/uv/) (package manager / runner)
+- **[uv](https://docs.astral.sh/uv/)** — handles Python and dependencies (you do **not** need to install Python separately; `uv` fetches Python 3.12 automatically).
+- **git**
 - A **ChatGPT account** (use a secondary one — see disclaimer)
+
+Install `uv` (one time per machine):
+
+```powershell
+# Windows (PowerShell)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
 ## Install
 
 ```bash
-git clone <repo-url> && cd chatgpt-image-mcp
+git clone https://github.com/andyluu98/awesome-chatgpt-mcp-image.git
+cd awesome-chatgpt-mcp-image
 uv sync
 uv run cgimg login
 # A browser opens -> log into ChatGPT -> you land on a platform.openai.com page (it may say "Oops").
 # Copy the FULL callback URL from the address bar, then run:
 uv run cgimg login --callback "<paste the callback URL here>"
 ```
+
+> The repo is **private** — the cloning machine must be signed into a GitHub account with access (e.g. `gh auth login`, or git credentials for `andyluu98`).
 
 ### Why login is two steps
 
@@ -68,9 +82,17 @@ claude mcp add chatgpt-image -- uv run cgimg-mcp
 | Tool | Params | Description |
 |------|--------|-------------|
 | `login_status` | — | Check whether a ChatGPT account is logged in. |
-| `generate_image` | `prompt`, `aspect="16:9"`, `n=1`, `out_dir="out"` | Generate `n` image(s) from a prompt. Returns saved PNG paths. |
+| `generate_image` | `prompt`, `aspect="16:9"`, `n=1`, `out_dir="out"`, `enhance=True` | Generate `n` image(s) from a prompt. Returns saved PNG paths. |
 | `build_pptx` | `image_paths`, `out_path="deck.pptx"`, `aspect="16:9"` | Assemble existing images into a full-bleed PPTX. |
-| `generate_slide_deck` | `prompts`, `aspect="16:9"`, `out_pptx="deck.pptx"`, `out_dir="out"` | Generate one image per prompt, then assemble into a PPTX. |
+| `generate_slide_deck` | `prompts`, `aspect="16:9"`, `out_pptx="deck.pptx"`, `out_dir="out"`, `enhance=True` | Generate one image per prompt, then assemble into a PPTX. |
+
+## Auto-enhance
+
+By default, short prompts are **automatically expanded** into a rich, detailed image prompt (via your ChatGPT account's text model) before generation — mimicking what the ChatGPT web UI does silently. This makes images far more detailed (dense infographics, multiple sections/icons), and preserves the prompt's language (e.g. Vietnamese with correct diacritics).
+
+- Prompts already long (≥280 chars) are used as-is (no double-processing).
+- Disable per call: `--no-enhance` (CLI) or `enhance=False` (MCP tool).
+- It adds one short text round-trip (~a few seconds) before each generation.
 
 ## CLI usage
 
@@ -79,8 +101,9 @@ claude mcp add chatgpt-image -- uv run cgimg-mcp
 uv run cgimg login
 uv run cgimg login --callback "<paste callback URL>"
 
-# 2. Generate image(s)
+# 2. Generate image(s)  (auto-enhance is ON by default; add --no-enhance to send the prompt as-is)
 uv run cgimg gen "a serene mountain lake at dawn" --aspect 16:9 --n 1 --out out
+uv run cgimg gen "ai agent" --aspect 1:1 --no-enhance   # send prompt verbatim
 
 # 3. Build a deck from images
 uv run cgimg ppt img1.png img2.png --out deck.pptx --aspect 16:9
