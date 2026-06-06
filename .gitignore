@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+auth.json
+out/
+*.pptx
+dist/
+.pytest_cache/
