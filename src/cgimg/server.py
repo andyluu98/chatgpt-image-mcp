@@ -52,6 +52,17 @@ def generate_slide_deck(prompts: list[str], aspect: str = "16:9",
     return {"path": path, "image_paths": images}
 
 
+@mcp.tool()
+def branded_deck(logo_path: str, prompts: list[str], aspect: str = "16:9",
+                 out_pptx: str = "deck.pptx", out_dir: str = "out",
+                 logo_position: str = "top-left", logo_scale: float = 0.15) -> dict:
+    """Build a branded slide deck: auto-detect brand colors from the logo, generate
+    slides in those colors, composite the original logo onto each slide, assemble PPTX."""
+    from cgimg.branding.deck import branded_deck as _bd
+    return _bd(logo_path, prompts, aspect=aspect, out_pptx=out_pptx, out_dir=out_dir,
+               logo_position=logo_position, logo_scale=logo_scale)
+
+
 def main() -> None:
     mcp.run()
 

@@ -34,6 +34,18 @@ def _cmd_ppt(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_branded(args: argparse.Namespace) -> int:
+    from cgimg.branding.deck import branded_deck
+    result = branded_deck(args.logo_path, args.prompts, aspect=args.aspect,
+                          out_pptx=args.out, out_dir=args.out_dir,
+                          logo_position=args.position, logo_scale=args.scale)
+    print(f"deck: {result['path']}")
+    print(f"brand_colors: {', '.join(result['brand_colors'])}")
+    for p in result["image_paths"]:
+        print(p)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="cgimg")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -57,6 +69,16 @@ def main(argv: list[str] | None = None) -> int:
     pp.add_argument("--out", default="deck.pptx")
     pp.add_argument("--aspect", default="16:9")
     pp.set_defaults(func=_cmd_ppt)
+
+    br = sub.add_parser("branded")
+    br.add_argument("logo_path")
+    br.add_argument("--prompts", nargs="+", required=True)
+    br.add_argument("--out", default="deck.pptx")
+    br.add_argument("--out-dir", dest="out_dir", default="out")
+    br.add_argument("--aspect", default="16:9")
+    br.add_argument("--position", default="top-left")
+    br.add_argument("--scale", type=float, default=0.15)
+    br.set_defaults(func=_cmd_branded)
 
     args = p.parse_args(argv)
     return args.func(args)

@@ -33,23 +33,56 @@ _TEMPLATE = (
 )
 
 
-def _template_enhance(prompt: str) -> str:
-    return _TEMPLATE.format(p=prompt.strip())
+def _brand_clause(brand_colors: list[str] | None, reserve_corner: str | None) -> str:
+    """Build the extra instruction text appended for brand context (may be empty)."""
+    parts: list[str] = []
+    if brand_colors:
+        parts.append(
+            "Use EXACTLY this brand color palette and no other dominant colors: "
+            f"{', '.join(brand_colors)}. Apply them to the background, accents, "
+            "and typography."
+        )
+    if reserve_corner:
+        parts.append(
+            f"Leave the {reserve_corner} corner area visually clear/empty — a logo "
+            "will be placed there. Do NOT draw any logo, wordmark, brand name, or "
+            "company text yourself anywhere in the image."
+        )
+    return " ".join(parts)
 
 
-def enhance_prompt(prompt: str, *, text_model: str = "gpt-5") -> str:
-    """Return an expanded prompt. Never raises — falls back to template on any error."""
+def _template_enhance(prompt: str, brand_clause: str = "") -> str:
+    out = _TEMPLATE.format(p=prompt.strip())
+    if brand_clause:
+        out = f"{out} {brand_clause}"
+    return out
+
+
+def enhance_prompt(prompt: str, *, text_model: str = "gpt-5",
+                   brand_colors: list[str] | None = None,
+                   reserve_corner: str | None = None) -> str:
+    """Return an expanded prompt. Never raises — falls back to template on any error.
+
+    When brand_colors and/or reserve_corner are provided, brand instructions are
+    appended and enhancement ALWAYS runs (the >=280-char skip applies only when no
+    brand context is requested, so the brand rules always take effect).
+    """
     p = prompt.strip()
-    if len(p) >= _LONG_PROMPT_CHARS:
-        return p  # already detailed; don't double-process
+    brand_clause = _brand_clause(brand_colors, reserve_corner)
+    has_brand = bool(brand_clause)
+
+    # Skip only when there is no brand context and the prompt is already detailed.
+    if not has_brand and len(p) >= _LONG_PROMPT_CHARS:
+        return p
     try:
         # Local imports: keep the vendored engine import lazy + after env/sys.path setup.
         from cgimg.auth import tokens
         from services.openai_backend_api import OpenAIBackendAPI
         from services.protocol.conversation import ConversationRequest, stream_text_deltas
         backend = OpenAIBackendAPI(access_token=tokens.get_access_token())
+        system = _SYSTEM if not brand_clause else f"{_SYSTEM} {brand_clause}"
         messages = [
-            {"role": "system", "content": _SYSTEM},
+            {"role": "system", "content": system},
             {"role": "user", "content": p},
         ]
         req = ConversationRequest(model=text_model, messages=messages)
@@ -59,4 +92,4 @@ def enhance_prompt(prompt: str, *, text_model: str = "gpt-5") -> str:
             return out
     except Exception:
         pass
-    return _template_enhance(p)
+    return _template_enhance(p, brand_clause)
