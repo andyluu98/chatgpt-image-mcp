@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import base64
 import os
+import sys
 import time
 
 # The vendored config.py instantiates a ConfigStore at IMPORT time and raises
@@ -33,15 +34,25 @@ from services.protocol.conversation import (  # noqa: E402
     stream_image_outputs_with_pool,
 )
 
+from cgimg.engine.enhance import enhance_prompt  # noqa: E402
+
 
 def generate_image(
     prompt: str,
     aspect: str = "16:9",
     n: int = 1,
     out_dir: str = "out",
+    enhance: bool = True,
 ) -> list[str]:
-    """Generate n image(s) and save them as PNGs. Returns saved file paths."""
+    """Generate n image(s) and save them as PNGs. Returns saved file paths.
+
+    When enhance is True (default), the short prompt is first expanded into a
+    rich, detailed prompt via the ChatGPT text path (mirrors the web UI).
+    """
     size = resolve_size(aspect)
+    if enhance:
+        prompt = enhance_prompt(prompt)
+        print(f"[enhance] prompt expanded to {len(prompt)} chars", file=sys.stderr)
     request = ConversationRequest(
         model="gpt-image-2",
         prompt=prompt,

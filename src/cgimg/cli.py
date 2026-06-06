@@ -21,7 +21,8 @@ def _cmd_login(args: argparse.Namespace) -> int:
 
 def _cmd_gen(args: argparse.Namespace) -> int:
     from cgimg.engine.generate import generate_image
-    paths = generate_image(args.prompt, aspect=args.aspect, n=args.n, out_dir=args.out)
+    paths = generate_image(args.prompt, aspect=args.aspect, n=args.n,
+                           out_dir=args.out, enhance=args.enhance)
     for p in paths:
         print(p)
     return 0
@@ -47,7 +48,9 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--aspect", default="16:9")
     g.add_argument("--n", type=int, default=1)
     g.add_argument("--out", default="out")
-    g.set_defaults(func=_cmd_gen)
+    g.add_argument("--no-enhance", dest="enhance", action="store_false",
+                   help="skip auto-expanding the prompt via the ChatGPT text path")
+    g.set_defaults(func=_cmd_gen, enhance=True)
 
     pp = sub.add_parser("ppt")
     pp.add_argument("images", nargs="+")
