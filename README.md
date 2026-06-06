@@ -39,6 +39,25 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ## Install
 
+### One-click installer (recommended)
+
+After cloning, run the installer — it installs `uv` if missing, syncs deps, walks you through login, and registers the MCP server:
+
+```bash
+git clone https://github.com/andyluu98/awesome-chatgpt-mcp-image.git
+cd awesome-chatgpt-mcp-image
+```
+```powershell
+# Windows (PowerShell) — or right-click install.ps1 -> Run with PowerShell
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+```bash
+# macOS / Linux
+bash install.sh
+```
+
+### Manual install
+
 ```bash
 git clone https://github.com/andyluu98/awesome-chatgpt-mcp-image.git
 cd awesome-chatgpt-mcp-image
