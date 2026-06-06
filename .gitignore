@@ -6,3 +6,6 @@ out/
 *.pptx
 dist/
 .pytest_cache/
+
+# Vendored engine runtime data (generated images, indexes)
+src/cgimg/_vendor/data/
