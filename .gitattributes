@@ -1,0 +1,4 @@
+# Shell scripts must keep LF endings or they break on macOS/Linux (^M bad interpreter).
+*.sh text eol=lf
+install.sh text eol=lf
+# PowerShell is fine with either; leave default.
