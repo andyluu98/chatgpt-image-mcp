@@ -13,3 +13,13 @@ def test_template_fallback_is_rich(monkeypatch):
     out = enhance.enhance_prompt("ai agent")
     assert "ai agent" in out.lower()
     assert len(out) > len("ai agent")  # got enriched
+
+
+def test_fintech_style_template_fallback(monkeypatch):
+    # style="fintech" must be accepted; force the LLM path to fail so the
+    # fintech template fallback runs -> non-empty string containing the input.
+    import cgimg.auth.tokens as t
+    monkeypatch.setattr(t, "get_access_token", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
+    out = enhance.enhance_prompt("fraud detection", style="fintech")
+    assert "fraud detection" in out.lower()
+    assert len(out) > len("fraud detection")  # got enriched
