@@ -20,10 +20,11 @@ def generate_image(prompt: str, aspect: str = "16:9", n: int = 1,
     (16:9, 1:1, 3:4, 9:16, or WxH). Returns saved PNG file paths.
 
     When enhance is True (default), the prompt is auto-expanded via the ChatGPT
-    text path before drawing. style='slide' applies a clean editorial
-    presentation-slide design (light background, restrained accent color, one
-    hero visual, short labels, takeaway banner) — best when prompt is slide
-    content. style='auto' is the general default."""
+    text path before drawing. style='slide' = clean editorial slide (light cream,
+    one accent, hero visual); style='fintech' = premium light-blue dashboard look
+    (glass cards, blue icon badges, optional robot + charts). Both auto-complete
+    content into a full, information-rich slide (label + 2-line description per
+    point, sparse input expanded). style='auto' is the general default."""
     from cgimg.engine.generate import generate_image as _gen
     return {"paths": _gen(prompt, aspect=aspect, n=n, out_dir=out_dir,
                           enhance=enhance, style=style)}
