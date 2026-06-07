@@ -14,16 +14,19 @@ def login_status() -> dict:
 
 @mcp.tool()
 def generate_image(prompt: str, aspect: str = "16:9", n: int = 1,
-                   out_dir: str = "out", enhance: bool = True) -> dict:
+                   out_dir: str = "out", enhance: bool = True,
+                   style: str = "auto") -> dict:
     """Generate image(s) from a text prompt at the given aspect ratio
     (16:9, 1:1, 3:4, 9:16, or WxH). Returns saved PNG file paths.
 
-    When enhance is True (default), the prompt is auto-expanded into a rich,
-    detailed prompt via the same ChatGPT account's text path (mirrors the web
-    UI) before drawing, producing far denser images. Set enhance=False to send
-    the prompt verbatim."""
+    When enhance is True (default), the prompt is auto-expanded via the ChatGPT
+    text path before drawing. style='slide' applies a clean editorial
+    presentation-slide design (light background, restrained accent color, one
+    hero visual, short labels, takeaway banner) — best when prompt is slide
+    content. style='auto' is the general default."""
     from cgimg.engine.generate import generate_image as _gen
-    return {"paths": _gen(prompt, aspect=aspect, n=n, out_dir=out_dir, enhance=enhance)}
+    return {"paths": _gen(prompt, aspect=aspect, n=n, out_dir=out_dir,
+                          enhance=enhance, style=style)}
 
 
 @mcp.tool()
@@ -37,17 +40,19 @@ def build_pptx(image_paths: list[str], out_path: str = "deck.pptx",
 @mcp.tool()
 def generate_slide_deck(prompts: list[str], aspect: str = "16:9",
                         out_pptx: str = "deck.pptx", out_dir: str = "out",
-                        enhance: bool = True) -> dict:
+                        enhance: bool = True, style: str = "slide") -> dict:
     """Generate one image per prompt then assemble them into a PPTX deck.
 
-    When enhance is True (default), each prompt is auto-expanded into a rich,
-    detailed prompt via the ChatGPT text path (mirrors the web UI) before
-    drawing. Set enhance=False to send prompts verbatim."""
+    Each prompt should be the CONTENT of one slide. style='slide' (default here)
+    applies a clean editorial presentation design (light, restrained accent, one
+    hero visual, short labels, takeaway banner) — pass raw slide content and the
+    enhancer designs it. Set enhance=False to send prompts verbatim."""
     from cgimg.engine.generate import generate_image as _gen
     from cgimg.ppt.builder import build_pptx as _build
     images: list[str] = []
     for pr in prompts:
-        images.extend(_gen(pr, aspect=aspect, n=1, out_dir=out_dir, enhance=enhance))
+        images.extend(_gen(pr, aspect=aspect, n=1, out_dir=out_dir,
+                           enhance=enhance, style=style))
     path = _build(images, out_pptx, aspect=aspect)
     return {"path": path, "image_paths": images}
 

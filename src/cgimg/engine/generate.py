@@ -43,15 +43,18 @@ def generate_image(
     n: int = 1,
     out_dir: str = "out",
     enhance: bool = True,
+    style: str = "auto",
 ) -> list[str]:
     """Generate n image(s) and save them as PNGs. Returns saved file paths.
 
-    When enhance is True (default), the short prompt is first expanded into a
-    rich, detailed prompt via the ChatGPT text path (mirrors the web UI).
+    When enhance is True (default), the prompt is first expanded via the ChatGPT
+    text path (mirrors the web UI). style="slide" applies a clean editorial
+    presentation-slide aesthetic (light, restrained, one hero, short labels) —
+    best for slide content.
     """
     size = resolve_size(aspect)
     if enhance:
-        prompt = enhance_prompt(prompt)
+        prompt = enhance_prompt(prompt, style=style)
         print(f"[enhance] prompt expanded to {len(prompt)} chars", file=sys.stderr)
     request = ConversationRequest(
         model="gpt-image-2",

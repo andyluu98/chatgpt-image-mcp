@@ -22,7 +22,7 @@ def _cmd_login(args: argparse.Namespace) -> int:
 def _cmd_gen(args: argparse.Namespace) -> int:
     from cgimg.engine.generate import generate_image
     paths = generate_image(args.prompt, aspect=args.aspect, n=args.n,
-                           out_dir=args.out, enhance=args.enhance)
+                           out_dir=args.out, enhance=args.enhance, style=args.style)
     for p in paths:
         print(p)
     return 0
@@ -62,6 +62,8 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--out", default="out")
     g.add_argument("--no-enhance", dest="enhance", action="store_false",
                    help="skip auto-expanding the prompt via the ChatGPT text path")
+    g.add_argument("--style", default="auto", choices=["auto", "slide"],
+                   help="'slide' = clean editorial presentation-slide design")
     g.set_defaults(func=_cmd_gen, enhance=True)
 
     pp = sub.add_parser("ppt")
