@@ -25,35 +25,65 @@ _SYSTEM = (
     "Output ONLY the final prompt text — no preamble, no quotes, no explanation."
 )
 
-# "slide" style — encodes a clean, editorial, "just enough" presentation-slide
-# aesthetic (light/airy, restrained accent, one hero visual, short labels, fixed
-# header/footer frame). Mirrors a professionally designed Figma/Canva deck rather
-# than a cluttered AI infographic.
+# Shared CONTENT rules for slide styles — balance completeness vs density:
+# a finished, informative slide (each point gets a one-line description + a relevant
+# supporting element), that intelligently completes sparse input, stays MEDIUM density
+# (not a wall of text, not nearly-empty), and never fabricates fake stats.
+_CONTENT_RULES = (
+    "CONTENT (complete & balanced — this is critical):\n"
+    "- Present the given content FULLY. For EACH main point, add a short one-line supporting "
+    "description (~6-14 words) so the slide is informative and feels like a finished "
+    "professional infographic, not a bare list.\n"
+    "- Where it fits the topic, add ONE relevant supporting element to make the slide feel "
+    "complete — e.g. a row of 4-6 application/benefit chips, or a small stat/dashboard card, "
+    "or a short takeaway line.\n"
+    "- If the user's input is SPARSE, intelligently COMPLETE it into a full, sensible slide on "
+    "that topic (reasonable points + descriptions).\n"
+    "- Aim for MEDIUM density: informative and complete, NOT a wall of tiny text and NOT "
+    "nearly-empty. Typically 3-6 main items, each = icon + short label + one-line description. "
+    "Keep all text clearly legible.\n"
+    "- Do NOT fabricate precise statistics, fake numbers, brand names, or quotes; keep any "
+    "additions general and accurate.\n"
+    "- Preserve all user-given wording and language (Vietnamese with correct diacritics)."
+)
+
+# "slide" style — clean, editorial, light/airy (cream + one warm accent, one hero visual).
 _SLIDE_SYSTEM = (
     "You are an expert presentation designer. Turn the user's slide content into ONE "
-    "image-generation prompt describing a single CLEAN, EDITORIAL 16:9 presentation slide. "
-    "Follow these design rules strictly:\n"
-    "- LIGHT & AIRY: white or soft cream background with a very subtle accent-colored "
-    "watercolor wash in one or two corners and faint minimal motifs. NOT dark, no heavy "
-    "gradients, never crowded.\n"
-    "- RESTRAINED COLOR: dark navy as the default text color; ONE warm accent color used "
-    "sparingly — to highlight just ONE key phrase in the title and for small accents. Avoid "
-    "saturated rainbow palettes. At most one soft secondary tint for a hero object.\n"
-    "- TITLE: large and clear, with only ONE key phrase colored in the accent; one short "
-    "subtitle below with a small colored tick/bar.\n"
-    "- CONTENT: organize into AT MOST 4-6 concise items, or two balanced groups/columns. "
-    "Each item = a simple line icon + a SHORT label (2-6 words). NEVER dense paragraphs, "
-    "never 10+ item grids, never tiny text. If the source has many points, GROUP or condense.\n"
-    "- ONE HERO VISUAL: a single soft glossy 3D illustration (e.g. a crystal, brain, network "
-    "node, or a relevant object) as a central or side anchor, with a gentle glow — subtle, "
-    "not overpowering. Use it to fill space elegantly instead of extra cards.\n"
-    "- FRAME: a small 'Slide' label/pill in a top corner and a slim one-line takeaway banner "
-    "(soft pill + small icon + one short insight, one keyword in the accent color) at the bottom.\n"
-    "- GENEROUS WHITESPACE, strong visual hierarchy, balanced, sophisticated, modern — looks "
-    "like a professionally designed deck, NOT an AI-cluttered infographic.\n"
-    "- FIDELITY: keep the user's exact wording, labels, and language (Vietnamese with correct "
-    "diacritics). Do NOT invent filler sections, fake statistics, or extra cards beyond the "
-    "given content.\n"
+    "image-generation prompt describing a single CLEAN, EDITORIAL 16:9 presentation slide.\n"
+    + _CONTENT_RULES + "\n"
+    "VISUAL STYLE:\n"
+    "- LIGHT & AIRY: white or soft cream background with a subtle accent-colored watercolor "
+    "wash in the corners and faint minimal motifs. Not dark, no heavy gradients.\n"
+    "- RESTRAINED COLOR: dark navy text; ONE warm accent color highlighting a single key phrase "
+    "in the title and small accents. Avoid rainbow palettes.\n"
+    "- Items as soft rounded cards with simple line icons; ONE soft glossy 3D hero illustration "
+    "as a side/center anchor with a gentle glow.\n"
+    "- FRAME: a small 'Slide' pill in a top corner and a slim one-line takeaway banner at the "
+    "bottom (soft pill + small icon + one keyword in the accent color).\n"
+    "- Strong visual hierarchy, balanced, sophisticated — a professionally designed deck.\n"
+    "Output ONLY the final image-generation prompt — no preamble, no quotes, no explanation."
+)
+
+# "fintech" style — premium light-blue dashboard look (glassy cards, gradient circular
+# icon badges, optional friendly 3D robot + chart widgets). Matches modern AI/finance decks.
+_FINTECH_SYSTEM = (
+    "You are an expert fintech presentation designer. Turn the user's slide content into ONE "
+    "image-generation prompt describing a single premium 16:9 presentation slide.\n"
+    + _CONTENT_RULES + "\n"
+    "VISUAL STYLE:\n"
+    "- BACKGROUND: light blue-to-white gradient, bright and airy, subtle glowing particles and "
+    "fine tech lines; premium, clean.\n"
+    "- CARDS: translucent GLASSMORPHISM rounded cards with soft shadows and a faint blue glow.\n"
+    "- ICONS: each item icon sits in a CIRCULAR badge filled with a blue gradient, white icon "
+    "inside.\n"
+    "- COLOR: deep navy (#1a2b5e) headings, blue (#2d6fe8) accent on key phrases; high-contrast "
+    "white text areas so text stays readable.\n"
+    "- OPTIONAL (when it fits the topic): a small friendly 3D white-and-blue robot mascot on one "
+    "side, and a floating glass dashboard with donut / line charts and stat cards. Any chart "
+    "numbers are clearly illustrative, not real data.\n"
+    "- FRAME: a slim rounded blue banner at the bottom with a shield icon and a one-line tagline.\n"
+    "- 4K, modern, sophisticated like a tech product keynote.\n"
     "Output ONLY the final image-generation prompt — no preamble, no quotes, no explanation."
 )
 
@@ -66,13 +96,21 @@ _TEMPLATE = (
 
 _SLIDE_TEMPLATE = (
     "{p}. Render as ONE clean, editorial 16:9 presentation slide: light cream/white "
-    "background with a subtle accent-color wash in the corners; dark navy text with ONE "
-    "warm accent color highlighting a single key phrase in the title; at most 4-6 concise "
-    "items each with a simple line icon and a short 2-6 word label (no dense paragraphs, no "
-    "tiny text); one soft glossy 3D hero illustration as the anchor; a small slide-number "
-    "pill in a top corner and a slim one-line takeaway banner at the bottom; generous "
-    "whitespace, strong hierarchy, sophisticated and uncluttered. Keep all text in the "
-    "request's language with correct diacritics; do not invent extra content."
+    "background with a subtle accent-color wash; dark navy text with ONE warm accent on a key "
+    "title phrase; 3-6 items, each an icon + short label + a one-line description; one soft "
+    "glossy 3D hero illustration; a small slide-number pill and a slim bottom takeaway banner; "
+    "medium density (informative, not crowded, not empty); legible text in the request's "
+    "language with correct diacritics. If input is sparse, complete it sensibly; do not invent fake stats."
+)
+
+_FINTECH_TEMPLATE = (
+    "{p}. Render as ONE premium 16:9 fintech slide: light blue-to-white gradient background with "
+    "subtle glow; translucent glassmorphism cards; circular blue-gradient icon badges; navy "
+    "headings with blue accent on a key phrase; 3-6 items each with icon + short label + one-line "
+    "description; optionally a friendly 3D blue-white robot and a glass dashboard with donut/line "
+    "charts (illustrative numbers); a slim blue bottom banner with a shield icon and tagline; "
+    "medium density, legible text in the request's language with correct diacritics. If input is "
+    "sparse, complete it sensibly; do not invent fake statistics."
 )
 
 
@@ -94,8 +132,11 @@ def _brand_clause(brand_colors: list[str] | None, reserve_corner: str | None) ->
     return " ".join(parts)
 
 
+_SLIDE_STYLES = {"slide", "fintech"}
+
+
 def _template_enhance(prompt: str, brand_clause: str = "", style: str = "auto") -> str:
-    base = _SLIDE_TEMPLATE if style == "slide" else _TEMPLATE
+    base = {"slide": _SLIDE_TEMPLATE, "fintech": _FINTECH_TEMPLATE}.get(style, _TEMPLATE)
     out = base.format(p=prompt.strip())
     if brand_clause:
         out = f"{out} {brand_clause}"
@@ -108,15 +149,16 @@ def enhance_prompt(prompt: str, *, text_model: str = "gpt-5",
                    style: str = "auto") -> str:
     """Return an expanded prompt. Never raises — falls back to template on any error.
 
-    style="slide" applies a clean editorial presentation-slide aesthetic and ALWAYS
-    enhances (the >=280-char skip is bypassed) so even detailed slide content gets the
-    designer treatment. When brand_colors/reserve_corner are provided, brand
+    style="slide" (clean editorial) or "fintech" (light-blue dashboard) apply a slide
+    design aesthetic and ALWAYS enhance (the >=280-char skip is bypassed) so even
+    detailed slide content gets the designer treatment, with content completed to a
+    balanced medium density. When brand_colors/reserve_corner are provided, brand
     instructions are appended and enhancement also always runs.
     """
     p = prompt.strip()
     brand_clause = _brand_clause(brand_colors, reserve_corner)
     has_brand = bool(brand_clause)
-    is_slide = style == "slide"
+    is_slide = style in _SLIDE_STYLES
 
     # Skip only for the generic "auto" style with no brand context on long prompts.
     if not is_slide and not has_brand and len(p) >= _LONG_PROMPT_CHARS:
@@ -127,7 +169,7 @@ def enhance_prompt(prompt: str, *, text_model: str = "gpt-5",
         from services.openai_backend_api import OpenAIBackendAPI
         from services.protocol.conversation import ConversationRequest, stream_text_deltas
         backend = OpenAIBackendAPI(access_token=tokens.get_access_token())
-        system = _SLIDE_SYSTEM if is_slide else _SYSTEM
+        system = {"slide": _SLIDE_SYSTEM, "fintech": _FINTECH_SYSTEM}.get(style, _SYSTEM)
         if brand_clause:
             system = f"{system} {brand_clause}"
         messages = [

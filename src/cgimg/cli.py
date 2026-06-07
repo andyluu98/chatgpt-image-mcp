@@ -73,8 +73,8 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--out", default="out")
     g.add_argument("--no-enhance", dest="enhance", action="store_false",
                    help="skip auto-expanding the prompt via the ChatGPT text path")
-    g.add_argument("--style", default="auto", choices=["auto", "slide"],
-                   help="'slide' = clean editorial presentation-slide design")
+    g.add_argument("--style", default="auto", choices=["auto", "slide", "fintech"],
+                   help="'slide' = clean editorial; 'fintech' = light-blue dashboard")
     g.set_defaults(func=_cmd_gen, enhance=True)
 
     pp = sub.add_parser("ppt")
