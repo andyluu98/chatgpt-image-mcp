@@ -68,6 +68,14 @@ def branded_deck(logo_path: str, prompts: list[str], aspect: str = "16:9",
                logo_position=logo_position, logo_scale=logo_scale)
 
 
+@mcp.tool()
+def styled_deck(ref_image: str, prompts: list[str], aspect: str = "16:9",
+                out_pptx: str = "deck.pptx", out_dir: str = "out") -> dict:
+    """Generate a deck matching a reference design image's style and colors (content not copied)."""
+    from cgimg.branding.deck import styled_deck as _sd
+    return _sd(ref_image, prompts, aspect=aspect, out_pptx=out_pptx, out_dir=out_dir)
+
+
 def main() -> None:
     mcp.run()
 

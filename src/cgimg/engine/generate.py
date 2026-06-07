@@ -31,6 +31,7 @@ set_token_provider(
 
 from services.protocol.conversation import (  # noqa: E402
     ConversationRequest,
+    encode_images,
     stream_image_outputs_with_pool,
 )
 
@@ -44,6 +45,7 @@ def generate_image(
     out_dir: str = "out",
     enhance: bool = True,
     style: str = "auto",
+    ref_image: str | None = None,
 ) -> list[str]:
     """Generate n image(s) and save them as PNGs. Returns saved file paths.
 
@@ -51,17 +53,43 @@ def generate_image(
     text path (mirrors the web UI). style="slide" applies a clean editorial
     presentation-slide aesthetic (light, restrained, one hero, short labels) —
     best for slide content.
+
+    When ref_image is a path, the engine runs the image-EDIT path: the model SEES
+    the reference and matches its DESIGN STYLE only (palette, layout, typography,
+    mood) — its text/content is NOT copied.
     """
     size = resolve_size(aspect)
     if enhance:
         prompt = enhance_prompt(prompt, style=style)
         print(f"[enhance] prompt expanded to {len(prompt)} chars", file=sys.stderr)
+
+    encoded: list[str] | None = None
+    if ref_image:
+        # Strong STYLE-ONLY instruction so the model borrows the look, not the words.
+        prompt = (
+            prompt
+            + " QUAN TRỌNG: Ảnh đính kèm CHỈ là tham chiếu PHONG CÁCH THIẾT KẾ "
+            "(bảng màu, bố cục, kiểu chữ, không khí, hoạ tiết trang trí). TUYỆT ĐỐI "
+            "KHÔNG sao chép chữ, tiêu đề, hay nội dung cụ thể trong ảnh tham chiếu. "
+            "Hãy tạo slide MỚI với nội dung đã cho ở trên, mang phong cách giống ảnh "
+            "tham chiếu. (IMPORTANT: the attached image is a DESIGN-STYLE reference "
+            "ONLY — palette, layout, typography, mood, decorative motifs. Do NOT copy "
+            "any text, titles, or specific content from it; create a NEW slide with "
+            "the content above, styled like the reference.)"
+        )
+        ext = os.path.splitext(ref_image)[1].lower()
+        mime = "image/jpeg" if ext in (".jpg", ".jpeg") else "image/png"
+        with open(ref_image, "rb") as f:
+            data = f.read()
+        encoded = encode_images([(data, mime, os.path.basename(ref_image))])
+
     request = ConversationRequest(
         model="gpt-image-2",
         prompt=prompt,
         size=size,
         n=n,
         quality="auto",
+        images=encoded,
         # response_format defaults to "b64_json" -> result dicts carry b64_json.
     )
 
