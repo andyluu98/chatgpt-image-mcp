@@ -11,6 +11,8 @@ dependencies = [
     "python-pptx>=1.0.0",
     "tiktoken>=0.7.0",
     "fastapi>=0.110.0",
+    "feedparser>=6.0",
+    "yt-dlp>=2024.0",
 ]
 
 [project.scripts]
