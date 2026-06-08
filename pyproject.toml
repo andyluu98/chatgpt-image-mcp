@@ -13,6 +13,12 @@ dependencies = [
     "fastapi>=0.110.0",
     "feedparser>=6.0",
     "yt-dlp>=2024.0",
+    "pyyaml>=6.0",
+    "requests>=2.31",
+    "loguru>=0.7",
+    "rich>=13.0",
+    "browser_cookie3>=0.19",
+    "rookiepy>=0.5",
 ]
 
 [project.scripts]
