@@ -4,7 +4,7 @@ import re
 from difflib import SequenceMatcher
 from typing import Any
 
-_SIM_THRESHOLD = 0.82  # title similarity to treat two findings as the same story
+_SIM_THRESHOLD = 0.80  # title similarity to treat two findings as the same story
 
 
 def score_finding(f: dict[str, Any]) -> float:
