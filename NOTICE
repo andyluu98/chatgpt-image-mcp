@@ -1,7 +1,3 @@
 This project vendors code from chatgpt2api (https://github.com/basketikun/chatgpt2api)
 Copyright (c) 2026 kunkun — MIT License.
 Vendored files live under src/cgimg/_vendor/ and retain their original behavior.
-
-This project also vendors code from Agent-Reach
-(https://github.com/Panniantong/Agent-Reach), Copyright (c) 2025 Agent Eyes, MIT License.
-Vendored under src/cgimg/research/agent_reach/.

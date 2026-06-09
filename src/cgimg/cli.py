@@ -1,4 +1,4 @@
-"""cgimg CLI: login / gen / ppt."""
+"""cgimg CLI: login / gen / ppt / branded / styled."""
 from __future__ import annotations
 import argparse
 import sys
@@ -57,31 +57,6 @@ def _cmd_styled(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_research(args: argparse.Namespace) -> int:
-    from cgimg.research.channels import research_topic
-    plats = args.platforms.split(",") if args.platforms else None
-    res = research_topic(args.topic, platforms=plats, out_path=args.out)
-    print(res["brief_path"])
-    for ins in res["insights"]:
-        print(f"- [{ins['platform']}] {ins['title']}")
-    return 0
-
-
-def _cmd_doctor(args: argparse.Namespace) -> int:
-    from cgimg.research.doctor import check_channels
-    for k, v in check_channels().items():
-        print(f"{k}: {v}")
-    return 0
-
-
-def _cmd_read(args: argparse.Namespace) -> int:
-    from cgimg.research.channels import read_url
-    r = read_url(args.url)
-    print(r.get("title", ""))
-    print(r.get("text", "")[:2000])
-    return 0
-
-
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="cgimg")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -125,19 +100,6 @@ def main(argv: list[str] | None = None) -> int:
     st.add_argument("--out-dir", dest="out_dir", default="out")
     st.add_argument("--aspect", default="16:9")
     st.set_defaults(func=_cmd_styled)
-
-    rs = sub.add_parser("research")
-    rs.add_argument("topic")
-    rs.add_argument("--platforms", default=None, help="comma-separated, e.g. youtube,x")
-    rs.add_argument("--out", default="out/brief.md")
-    rs.set_defaults(func=_cmd_research)
-
-    dr = sub.add_parser("doctor")
-    dr.set_defaults(func=_cmd_doctor)
-
-    rd = sub.add_parser("read")
-    rd.add_argument("url")
-    rd.set_defaults(func=_cmd_read)
 
     args = p.parse_args(argv)
     return args.func(args)

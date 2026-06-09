@@ -77,31 +77,6 @@ def styled_deck(ref_image: str, prompts: list[str], aspect: str = "16:9",
     return _sd(ref_image, prompts, aspect=aspect, out_pptx=out_pptx, out_dir=out_dir)
 
 
-@mcp.tool()
-def research_topic(topic: str, platforms: list[str] | None = None,
-                   limit: int = 10, out_dir: str = "out") -> dict:
-    """Scrape platforms (youtube, x) for a topic, score + cluster results, and return a
-    TrendBrief (markdown path + ranked insights). Feeds content writing."""
-    import os
-    from cgimg.research.channels import research_topic as _rt
-    return _rt(topic, platforms=platforms, limit=limit,
-               out_path=os.path.join(out_dir, "brief.md"))
-
-
-@mcp.tool()
-def read_url(url: str) -> dict:
-    """Extract title + main text from a web page or article (via Jina Reader)."""
-    from cgimg.research.channels import read_url as _ru
-    return _ru(url)
-
-
-@mcp.tool()
-def research_doctor() -> dict:
-    """Report which research channels are usable on this machine."""
-    from cgimg.research.doctor import check_channels
-    return {"channels": check_channels()}
-
-
 def main() -> None:
     mcp.run()
 
