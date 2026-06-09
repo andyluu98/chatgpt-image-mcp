@@ -1,19 +1,32 @@
-# cgimg — ChatGPT Image MCP Server
+# social-content-studio
 
-A standalone MCP server (and CLI) that generates images through the ChatGPT web backend, then assembles them into full-bleed PowerPoint decks — including brand-aware and reference-styled decks.
+An MCP server (and CLI) for end-to-end social content. It is built as three pillars:
+
+- **Visuals ✅** — generate images through the ChatGPT web backend and assemble them into full-bleed PowerPoint decks (brand-aware and reference-styled).
+- **Research ✅** — give it a topic, it scrapes YouTube / X / the web, ranks what's trending, and writes a **TrendBrief** that feeds content writing.
+- **Write / Publish 🚧 (planned)** — turn a brief into drafts and push them to platforms.
+
+> The package and commands are still named `cgimg` (the original ChatGPT-image tool it grew from). The product as a whole is `social-content-studio`.
 
 ## ⚠️ Disclaimer
 
-This project **reverse-engineers the ChatGPT web backend** for image generation. It is provided **for personal learning and research only**.
+This project is provided **for personal learning and research only**. It has two independent risk surfaces:
 
+**Visuals pillar — reverse-engineers the ChatGPT web backend:**
 - **Not affiliated with, endorsed by, or sponsored by OpenAI.**
 - Using it **violates OpenAI's Terms of Service**. Your account may be rate-limited or **permanently banned**.
 - **Use a throwaway / secondary account — never your important one.**
-- Provided **as-is, with no warranty**. You assume all risk.
 
-If you are not comfortable with these terms, do not use this software.
+**Research pillar — scrapes third-party platforms:**
+- It drives free external CLIs (yt-dlp, etc.) and web readers to **scrape YouTube, X, and websites**. This may violate those platforms' Terms of Service and is subject to their rate limits and scraping defenses.
+- Scrapers are fragile by nature — a platform change can break a channel at any time.
+- Scrape only public data, respect robots/ToS, and use it responsibly.
+
+Provided **as-is, with no warranty**. You assume all risk. If you are not comfortable with these terms, do not use this software.
 
 ## What it does
+
+### Visuals pillar
 
 - Generates images from text prompts at a chosen aspect ratio (16:9, 1:1, 3:4, 9:16, or raw `WxH`).
 - **Auto-enhances** prompts via your ChatGPT account's text model before drawing (mirrors what the web UI does silently). Three slide styles: `auto`, `slide`, `fintech`.
@@ -22,6 +35,14 @@ If you are not comfortable with these terms, do not use this software.
 - **Styled decks**: matches the design style and palette of a reference image (without copying its text/content).
 - Works as an MCP server across **Claude Code, Codex, and Antigravity** over stdio.
 - Single-account, fully local auth — your token never leaves your machine.
+
+### Research pillar
+
+- Takes a **topic** → scrapes YouTube / X / the web → ranks results by engagement → writes a **TrendBrief** (markdown + structured insights) you can hand to content writing.
+- Uses **free external CLIs** (yt-dlp bundled; others optional) — **no ChatGPT account or token needed** (unlike the visuals pillar).
+- Reads any web page/article to clean text (`read_url`), and ships a `doctor` that tells you which channels work on your machine.
+
+See [**Research pillar**](#research-pillar-1) below for tools, CLI, and caveats, plus [`docs/research.md`](./docs/research.md) for the full guide.
 
 ## Requirements
 
@@ -101,7 +122,9 @@ claude mcp add chatgpt-image -- uv run cgimg-mcp
 
 ## MCP tools
 
-Six tools are exposed by the server (`src/cgimg/server.py`):
+Nine tools are exposed by the server (`src/cgimg/server.py`) — six for visuals, three for research.
+
+**Visuals:**
 
 | Tool | Params | Returns | Description |
 |------|--------|---------|-------------|
@@ -177,6 +200,58 @@ PPTX output is **full-bleed**: the image fills the slide edge to edge, so the im
 - Stores a single account token locally at `%APPDATA%\cgimg\auth.json` (Windows) or `~/.config/cgimg/auth.json` (Linux/macOS). It is **never committed**.
 - Auto-refreshes the access token via the stored `refresh_token` when it expires.
 
+## Research pillar
+
+The research pillar answers "what's trending on this topic?" so you have real, ranked material to write from. Flow:
+
+```
+topic ──► scrape youtube / x / web ──► score by engagement + cluster near-dup titles ──► TrendBrief (markdown + insights)
+```
+
+`channels.py` runs each platform's free CLI as a subprocess (`youtube` = yt-dlp; `x` = `twitter-cli` if installed), normalizes results to a common **Finding** shape, then `scoring.py` ranks by engagement and groups near-duplicate stories, and `brief.py` writes the **TrendBrief**. The brief is meant to feed the planned **write/publish** pillar.
+
+### Research MCP tools
+
+| Tool | Params | Returns | Description |
+|------|--------|---------|-------------|
+| `research_topic` | `topic`, `platforms=["youtube","x"]`, `limit=10`, `out_dir="out"` | `{brief_path, insights[], by_platform}` | Scrape the given platforms for the topic, rank + cluster, write `out_dir/brief.md`. `insights` = top stories (`title`, `platform`, `url`, `sources`, `score`); `by_platform` = per-platform finding counts. |
+| `read_url` | `url` | `{title, text, meta}` | Extract a web page/article's title + main text (markdown) via Jina Reader. Returns empty text on failure (never raises). |
+| `research_doctor` | — | `{channels}` | Report which research channels are usable on this machine (`{name: "ok"\|"missing"}`). |
+
+### Research CLI
+
+```bash
+# Trend brief for a topic (YouTube only here — comma-separate to add more, e.g. youtube,x)
+uv run cgimg research "chứng khoán việt nam" --platforms youtube --out out/brief.md
+
+# Which channels work on this machine?
+uv run cgimg doctor
+
+# Read a web page/article to clean text
+uv run cgimg read "https://example.com/some-article"
+```
+
+`research` prints the brief path then each ranked insight as `- [platform] <title>`. The full brief lands at `--out` (default `out/brief.md`).
+
+### Dependencies & graceful degradation
+
+Research calls **free external CLIs**, not a paid API:
+
+- **yt-dlp** is bundled (a project dependency) — YouTube works out of the box.
+- Other channels need their own tool installed (e.g. **`twitter-cli`** for X). If a tool is missing, that channel simply returns **no results** instead of crashing the run.
+- Run **`uv run cgimg doctor`** to see what's available before relying on a channel.
+
+### Platform reliability
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| YouTube | ✅ Solid | via bundled yt-dlp |
+| Web / `read_url` | ✅ Solid | via Jina Reader |
+| X (Twitter) | ⚠️ Needs `twitter-cli` | degrades to empty if the CLI isn't installed |
+| Facebook / TikTok | ❌ Not supported | free scraping is too fragile — future work |
+
+> See the [Disclaimer](#️-disclaimer) — scraping these platforms carries ToS / rate-limit risk.
+
 ## Examples
 
 Showcase slides generated by this server live in [`examples/sample-slides/`](./examples/sample-slides/) — a mix of `slide`/`fintech` styles, dense multi-task slides, custom layouts, and tables.
@@ -194,4 +269,9 @@ Showcase slides generated by this server live in [`examples/sample-slides/`](./e
 
 ## Attribution & License
 
-This project vendors code from [**chatgpt2api**](https://github.com/basketikun/chatgpt2api), Copyright (c) 2026 kunkun, MIT License. Vendored files live under `src/cgimg/_vendor/` and retain their original behavior. See [`NOTICE`](./NOTICE) for details.
+This project vendors code from:
+
+- [**chatgpt2api**](https://github.com/basketikun/chatgpt2api) — Copyright (c) 2026 kunkun, MIT License. Powers the visuals pillar's OAuth + image backend. Vendored under `src/cgimg/_vendor/`.
+- [**Agent-Reach**](https://github.com/Panniantong/Agent-Reach) — Copyright (c) 2025 Agent Eyes, MIT License. Powers the research pillar's `read_url` (Jina Reader) and the `doctor` channel diagnostic. Vendored under `src/cgimg/research/agent_reach/`.
+
+Vendored files retain their original behavior. See [`NOTICE`](./NOTICE) for details.
