@@ -15,7 +15,8 @@ def login_status() -> dict:
 @mcp.tool()
 def generate_image(prompt: str, aspect: str = "16:9", n: int = 1,
                    out_dir: str = "out", enhance: bool = True,
-                   style: str = "auto") -> dict:
+                   style: str = "auto", ref_image: str | None = None,
+                   ref_mode: str = "style") -> dict:
     """Generate image(s) from a text prompt at the given aspect ratio
     (16:9, 1:1, 3:4, 9:16, or WxH). Returns saved PNG file paths.
 
@@ -24,10 +25,17 @@ def generate_image(prompt: str, aspect: str = "16:9", n: int = 1,
     one accent, hero visual); style='fintech' = premium light-blue dashboard look
     (glass cards, blue icon badges, optional robot + charts). Both auto-complete
     content into a full, information-rich slide (label + 2-line description per
-    point, sparse input expanded). style='auto' is the general default."""
+    point, sparse input expanded). style='auto' is the general default.
+
+    ref_image: path to a reference image the model SEES while drawing (like
+    dragging an image into ChatGPT). ref_mode='logo' (alias 'asset') tells the
+    model to place that real logo/brand asset into the image EXACTLY as given
+    (no redraw/invent) — use this for logos. ref_mode='style' (default) borrows
+    only the reference's look (palette/layout/typography), not its content."""
     from cgimg.engine.generate import generate_image as _gen
     return {"paths": _gen(prompt, aspect=aspect, n=n, out_dir=out_dir,
-                          enhance=enhance, style=style)}
+                          enhance=enhance, style=style,
+                          ref_image=ref_image, ref_mode=ref_mode)}
 
 
 @mcp.tool()

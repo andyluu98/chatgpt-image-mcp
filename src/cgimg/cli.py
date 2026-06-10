@@ -22,7 +22,8 @@ def _cmd_login(args: argparse.Namespace) -> int:
 def _cmd_gen(args: argparse.Namespace) -> int:
     from cgimg.engine.generate import generate_image
     paths = generate_image(args.prompt, aspect=args.aspect, n=args.n,
-                           out_dir=args.out, enhance=args.enhance, style=args.style)
+                           out_dir=args.out, enhance=args.enhance, style=args.style,
+                           ref_image=args.ref_image, ref_mode=args.ref_mode)
     for p in paths:
         print(p)
     return 0
@@ -75,6 +76,12 @@ def main(argv: list[str] | None = None) -> int:
                    help="skip auto-expanding the prompt via the ChatGPT text path")
     g.add_argument("--style", default="auto", choices=["auto", "slide", "fintech"],
                    help="'slide' = clean editorial; 'fintech' = light-blue dashboard")
+    g.add_argument("--ref-image", dest="ref_image", default=None,
+                   help="path to a reference image the model SEES while drawing")
+    g.add_argument("--ref-mode", dest="ref_mode", default="style",
+                   choices=["style", "logo", "asset"],
+                   help="'logo'/'asset' = place that real logo into the image; "
+                        "'style' = borrow only its look (default)")
     g.set_defaults(func=_cmd_gen, enhance=True)
 
     pp = sub.add_parser("ppt")
